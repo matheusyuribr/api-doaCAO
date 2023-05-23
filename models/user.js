@@ -11,10 +11,6 @@ const userSchema = new Schema({
     required: true,
     unique: true,
   },
-  birthDate: {
-    type: Date,
-    required: true,
-  },
   phone: {
     type: String,
     required: true,

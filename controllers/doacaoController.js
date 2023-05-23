@@ -1,58 +1,166 @@
-const { Doacao: DoacaoModel } = require("../models/doacao")
+const { Doacao: DoacaoModel } = require("../models/doacao");
+const moment = require("moment");
 
 const doacaoController = {
+  create: async (req, res) => {
+    try {
+      const doacao = {
+        date: req.body.date,
+        type: req.body.type,
+        description: req.body.description,
+        validity: req.body.validity,
+        status: req.body.status,
+        donor: req.body.donor,
+      };
+  
+      const existeDoacao = await DoacaoModel.findOne({
+        date: doacao.date
+      });
+  
+      if (existeDoacao) {
+        res.status(409).json({
+          msg: "Já existe uma doação na mesma data e hora."
+        });
+        return;
+      }
+  
+      const response = await DoacaoModel.create(doacao);
+  
+      res.status(201).json({
+        response,
+        msg: "Doação Incluída com Sucesso!"
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
 
-    create: async(req, res) => {
-        try{
+  
 
-            const doacao = {
+  getAll: async (req, res) => {
+    try {
+      const doacoes = await DoacaoModel.find();
 
-                date: req.body.date,
-                type: req.body.type,
-                description: req.body.description,
-                validity: req.body.validity,
-                status: req.body.status,
-                donor: req.body.donor
+      res.json(doacoes);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 
-            }
+  getByDonor: async (req, res) => {
+    try {
+      const honorId = req.params.honor;
 
-            const response = await DoacaoModel.create(doacao)
+      const doacoes = await DoacaoModel.find({ donor: honorId });
 
-            res.status(201).json({response, msg: "Doação Incluida com Sucesso!"})
+      res.status(200).json({ doacoes });
+    } catch (error) {
+      console.log(error);
+    }
+  },
 
-        }catch(error){
-            console.log(error)
-        }
-    },
+  getByDonorAndStatus: async (req, res) => {
+    try {
+      const honorId = req.params.honor;
 
-    getAll: async(req,res) => {
-        try{
+      const status = req.params.status;
 
-            const doacoes = await DoacaoModel.find()
+      const doacoes = await DoacaoModel.find({
+        donor: honorId,
+        status: status,
+      });
 
-            res.json(doacoes)
+      res.status(200).json({ doacoes });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
 
-        }catch(error){
-            console.log(error)
-        }
-    },
+  attStatus: async (req, res) => {
+    try {
+      const doacaoId = req.params.id;
+      const status = req.body.status;
 
-    getByDonor: async(req,res) =>{
+      if (
+        status !== "em andamento" &&
+        status !== "concluida" &&
+        status !== "rejeitada"
+      ) {
+        res.status(422).json({ msg: "Status inválido!" });
+        return; // Adicionado para evitar que o código continue executando
+      }
 
-        try{
+      const doacao = await DoacaoModel.findByIdAndUpdate(doacaoId, {
+        status: status,
+      });
 
-            const honorId = req.params.honor
+      res.status(200).json({ msg: "Status alterado com sucesso!" });
+    } catch (error) {
+      res.json(500).json({msg:error})
+    }
+  },
 
 
-            const doacoes = await DoacaoModel.find({donor: honorId})
+  deleteDoacao: async(req,res)=>{
 
-            res.status(200).json({doacoes})
-        }
+    try{
 
-    catch(error){
-        console.log(error)
+      const id = req.params.id;
+
+      const doacao = await DoacaoModel.findByIdAndDelete(id)
+
+      res.status(200).json({msg:'Doação deletada com sucesso!'})
+
+    }catch(error){
+
+      res.json(500).json({msg:error})
+
     }
 
-}}
 
-module.exports = doacaoController
+  },
+
+  getHorarios: async (req, res) => {
+    try {
+      const existingDoacoes = await DoacaoModel.find();
+  
+      const horariosOcupados = existingDoacoes.map((doacao) => moment(doacao.date));
+  
+      const horariosDisponiveis = {};
+      const diasDisponiveis = 15;
+  
+      const horaInicio = moment().hour(9).minute(0).second(0);
+      const horaFim = moment().hour(18).minute(0).second(0);
+      let dataAtual = moment().startOf('day');
+      let dia = 0;
+  
+      while (dia < diasDisponiveis) {
+        const horariosDia = [];
+        let horaAtual = moment(horaInicio);
+  
+        while (horaAtual.isSameOrBefore(horaFim)) {
+          const dataHoraAtual = moment(dataAtual).add(horaAtual.hours(), 'hours').add(horaAtual.minutes(), 'minutes');
+          if (!horariosOcupados.some((hora) => hora.isSame(dataHoraAtual))) {
+            horariosDia.push(horaAtual.format("HH:mm"));
+          }
+          horaAtual = horaAtual.add(15, "minutes");
+        }
+  
+        if (horariosDia.length > 0) {
+          horariosDisponiveis[dataAtual.format("YYYY-MM-DD")] = horariosDia;
+        }
+  
+        dataAtual = dataAtual.add(1, "day");
+        dia++;
+      }
+  
+      res.status(200).json({ horariosDisponiveis });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  }
+
+};
+
+module.exports = doacaoController;

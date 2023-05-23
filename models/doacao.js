@@ -6,6 +6,7 @@ const doacaoSchema = new Schema({
   date: {
     type: Date,
     required: true,
+    unique: true, // Adicionado para garantir que não haja doações na mesma data e hora
   },
   type: {
     type: String,
@@ -25,13 +26,13 @@ const doacaoSchema = new Schema({
     enum: ["em andamento", "concluida", "rejeitada"],
     default: "em andamento",
   },
-
   donor: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
 });
+
 
 const Doacao = mongoose.model("Doacao", doacaoSchema);
 
