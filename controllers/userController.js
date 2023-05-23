@@ -6,7 +6,7 @@ require("dotenv").config();
 const UserController = {
   register: async (req, res) => {
     try {
-      const { name, email, password, confirmPassword, birthDate, phone } =
+      const { name, email, password, confirmPassword, phone } =
         req.body;
 
       //Validacoes
@@ -22,11 +22,6 @@ const UserController = {
       }
       if (password !== confirmPassword) {
         return res.status(422).json({ msg: "Senhas diferentes!" });
-      }
-      if (!birthDate) {
-        return res
-          .status(422)
-          .json({ msg: "A data de nascimento nome é obrigátoria!" });
       }
       if (!phone) {
         return res.status(422).json({ msg: "O telefone é obrigátorio!" });
@@ -45,8 +40,7 @@ const UserController = {
         name: name,
         email: email,
         password: passwordHash,
-        phone: phone,
-        birthDate: birthDate,
+        phone: phone
       };
 
       const response = await UserModel.create(user);
