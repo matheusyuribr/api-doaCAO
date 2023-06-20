@@ -8,21 +8,9 @@ const doacaoController = {
         date: req.body.date,
         type: req.body.type,
         description: req.body.description,
-        validity: req.body.validity,
         status: req.body.status,
         donor: req.body.donor,
       };
-  
-      const existeDoacao = await DoacaoModel.findOne({
-        date: doacao.date
-      });
-  
-      if (existeDoacao) {
-        res.status(409).json({
-          msg: "Já existe uma doação na mesma data e hora."
-        });
-        return;
-      }
   
       const response = await DoacaoModel.create(doacao);
   
@@ -31,7 +19,7 @@ const doacaoController = {
         msg: "Doação Incluída com Sucesso!"
       });
     } catch (error) {
-      console.log(error);
+      res.status(500).json(error);
     }
   },
 

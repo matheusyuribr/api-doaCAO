@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const doacaoSchema = new Schema({
   date: {
-    type: Date,
+    type: String,
     required: true,
     unique: true, // Adicionado para garantir que não haja doações na mesma data e hora
   },
@@ -15,10 +15,6 @@ const doacaoSchema = new Schema({
   },
   description: {
     type: String,
-    required: true,
-  },
-  validity: {
-    type: Date,
     required: true,
   },
   status: {
