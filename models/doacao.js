@@ -6,7 +6,7 @@ const doacaoSchema = new Schema({
   date: {
     type: String,
     required: true,
-    unique: true, // Adicionado para garantir que não haja doações na mesma data e hora
+       // Adicionado para garantir que não haja doações na mesma data e hora
   },
   type: {
     type: String,
