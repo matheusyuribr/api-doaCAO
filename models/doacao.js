@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
+const uuid = require('uuid');
 
 const { Schema } = mongoose;
 
 const doacaoSchema = new Schema({
+
+  _id: {
+    type: String,
+    default: uuid.v4, // Gera um ID aleatório único
+  },
   date: {
     type: String,
     required: true,
